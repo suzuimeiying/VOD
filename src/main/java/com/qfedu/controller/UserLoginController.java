@@ -2,6 +2,7 @@ package com.qfedu.controller;
 
 import com.qfedu.pojo.UserLogin;
 import com.qfedu.service.UserLoginService;
+import com.qfedu.util.AES;
 import com.qfedu.vo.JsonBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,7 +20,7 @@ public class UserLoginController {
         //新的用户
         UserLogin userLogin = new UserLogin();
         userLogin.setName(name);
-        userLogin.setPassword(password);
+        userLogin.setPassword(AES.encrypt("8856",password));
         userLogin.setEmail(email);
         userLogin.setTel(tel);
         userLogin.setFlag(1);
@@ -48,7 +49,7 @@ public class UserLoginController {
         //判断是否存在该用户
         if (user != null) {
             //存在就判断密码正确与否
-            if ((user.getPassword()).equals(password)){
+            if ((user.getPassword()).equals(AES.decrypt("8856",password))){
                 jsonBean.setCode(1);
             }else {
                 jsonBean.setCode(0);
