@@ -3,7 +3,10 @@ package com.qfedu.controller;
 import com.qfedu.pojo.UserLogin;
 import com.qfedu.service.UserLoginService;
 import com.qfedu.util.AES;
-import com.qfedu.vo.JsonBean;
+import com.qfedu.vo.ResultVo;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authc.UsernamePasswordToken;
+import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,8 +18,8 @@ public class UserLoginController {
 
     //添加新的用户----注册
     @RequestMapping("/register.do")
-    public JsonBean insert(String name,String password,String email,String tel ){
-        JsonBean jsonBean = new JsonBean();
+    public ResultVo insert(String name, String password, String email, String tel ){
+        ResultVo resultVo = new ResultVo();
         //新的用户
         UserLogin userLogin = new UserLogin();
         userLogin.setName(name);
@@ -28,40 +31,43 @@ public class UserLoginController {
         try {
             //添加
             userLoginService.insert(userLogin);
-            jsonBean.setCode(1);
+            resultVo.setCode(1);
+            resultVo.setMsg("注册成功");
         } catch (Exception e) {
             e.printStackTrace();
-            jsonBean.setCode(0);
-            jsonBean.setInfo(e.getMessage());
+            resultVo.setCode(0);
+            resultVo.setData(e.getMessage());
         }
 
-        return  jsonBean;
+        return  resultVo;
 
     }
 
 
     //登录验证
     @RequestMapping("/login.do")
-    public JsonBean login(String name,String password){
-        JsonBean jsonBean = new JsonBean();
+    public ResultVo login(String name, String password){
 
-        UserLogin user = userLoginService.selectUserLoginByName(name);
-        //判断是否存在该用户
-        if (user != null) {
-            //存在就判断密码正确与否
-            if ((user.getPassword()).equals(AES.decrypt("8856",password))){
-                jsonBean.setCode(1);
-            }else {
-                jsonBean.setCode(0);
-                jsonBean.setInfo("账户或密码错误");
-            }
+        ResultVo user = userLoginService.login(name,password);
+        //完成登录认证
+        if(user.getCode()==1) {
 
-        }else {
-            jsonBean.setCode(0);
-            jsonBean.setInfo("您还没有注册，请先注册");
+            //1、获取主题
+            Subject subject= SecurityUtils.getSubject();
+
+            //2、设置登录的Token
+            UsernamePasswordToken token=new UsernamePasswordToken(name, password);
+            //token.setRememberMe(true);  记住我 将用户名和密码存储到Cookie中
+
+            //3、存储数据到Session
+            subject.getSession().setAttribute("user", user.getData());
+
+            //UserLogin user=(UserLogin) SecurityUtils.getSubject().getSession().getAttribute("user");-----获取Token
+
+            //4、登录认证
+            subject.login(token);
         }
-
-        return jsonBean;
+        return user;
     }
 
 }
