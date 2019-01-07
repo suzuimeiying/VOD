@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx.xsd">
+    <!-- 1.数据源 -->
+    <bean id="adminRealm" class="com.qfedu.shiro.AdminRealm"></bean>
+    <!-- 2.管理器 -->
+    <bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+        <property name="realm" ref="adminRealm"></property>
+    </bean>
+    <!-- 3.过滤器工厂 -->
+    <bean id="shiroFilter"  class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+        <property name="securityManager" ref="securityManager"></property>
+        <!-- 登入页面 -->
+        <property name="loginUrl" value="/index.html"></property>
+        <!-- 登入成功页面 -->
+        <property name="successUrl" value="/html/admin/admin.html"></property>
+        <!-- 错误页面 -->
+        <property name="unauthorizedUrl" value="/html/index.html"></property>
+        <!-- URL的拦截 -->
+        <property name="filterChainDefinitions">
+            <value>
+                /html/*.*=anon
+                /login.do=anon
+
+                /**=anon
+
+            </value>
+        </property>
+    </bean>
+</beans>
